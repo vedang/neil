@@ -317,6 +317,23 @@ chmod +x bin/kaocha
     (print-help cmd)
     (add-alias opts :cider-storm (cider-storm-alias))))
 
+(defn logs-dev-alias []
+  "
+{:jvm-opts
+   [\"-Dclojure.tools.logging.factory=clojure.tools.logging.impl/log4j2-factory\"
+    \"-Dorg.eclipse.jetty.util.log.class=org.eclipse.jetty.util.log.Slf4jLog\"
+    \"-Dlog4j2.contextSelector=org.apache.logging.log4j.core.async.AsyncLoggerContextSelector\"
+    \"-Dlog4j2.configurationFile=logger/log4j2.xml\"
+    ;; Change logging.level to one of TRACE, DEBUG, INFO, WARN, ERROR
+    ;; depending on requirement during development
+    \"-Dlogging.level=DEBUG\"]}
+")
+
+(defn add-logs-dev [{:keys [opts] :as cmd}]
+  (if (:help opts)
+    (print-help cmd)
+    (add-alias opts :logs-dev (logs-dev-alias))))
+
 (defn build-alias-latest []
   (let [latest-tag (git/latest-github-tag 'clojure/tools.build)
         tag (:name latest-tag)
@@ -949,6 +966,7 @@ test
     {:cmds ["add" "nrepl"] :fn add-nrepl}
     {:cmds ["add" "cider"] :fn add-cider}
     {:cmds ["add" "cider-storm"] :fn add-cider-storm}
+    {:cmds ["add" "logs-dev"] :fn add-logs-dev}
     {:cmds ["add"] :fn print-help}
     {:cmds ["dep" "versions"] :fn dep-versions :args->opts [:lib]}
     {:cmds ["dep" "add"] :fn dep-add :args->opts [:lib]}
