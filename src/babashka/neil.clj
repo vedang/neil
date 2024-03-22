@@ -222,6 +222,26 @@ chmod +x bin/kaocha
     (print-help cmd)
     (add-alias opts :nrepl (nrepl-alias))))
 
+(defn cider-alias []
+  (format "
+{:extra-deps {cider/cider-nrepl {:mvn/version \"%s\"}
+              djblue/portal {:mvn/version \"%s\"}
+              mx.cider/tools.deps.enrich-classpath {:mvn/version \"%s\"}
+              nrepl/nrepl {:mvn/version \"%s\"}
+              refactor-nrepl/refactor-nrepl {:mvn/version \"%s\"}}
+ :main-opts  [\"-m\" \"nrepl.cmdline\"
+              \"--middleware\" \"[cider.nrepl/cider-middleware,refactor-nrepl.middleware/wrap-refactor,portal.nrepl/wrap-portal]\"]}
+"
+          (latest-stable-clojars-version 'cider/cider-nrepl)
+          (latest-stable-clojars-version 'djblue/portal)
+          (latest-stable-clojars-version 'mx.cider/tools.deps.enrich-classpath)
+          (latest-stable-clojars-version 'nrepl/nrepl)
+          (latest-stable-clojars-version 'refactor-nrepl/refactor-classpath)))
+
+(defn add-cider [{:keys [opts] :as cmd}]
+  (if (:help opts)
+    (print-help cmd)
+    (add-alias opts :cider (cider-alias))))
 (defn build-alias [_opts]
   (let [latest-tag (git/latest-github-tag 'clojure/tools.build)
         tag (:name latest-tag)
@@ -846,6 +866,7 @@ test
     {:cmds ["add" "build"] :fn add-build}
     {:cmds ["add" "kaocha"] :fn add-kaocha}
     {:cmds ["add" "nrepl"] :fn add-nrepl}
+    {:cmds ["add" "cider"] :fn add-cider}
     {:cmds ["dep" "versions"] :fn dep-versions :args->opts [:lib]}
     {:cmds ["dep" "add"] :fn dep-add :args->opts [:lib]}
     {:cmds ["dep" "search"] :fn dep-search :args->opts [:search-term]}
