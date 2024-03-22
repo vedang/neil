@@ -319,14 +319,15 @@ chmod +x bin/kaocha
 
 (defn logs-dev-alias []
   "
-{:jvm-opts
-   [\"-Dclojure.tools.logging.factory=clojure.tools.logging.impl/log4j2-factory\"
-    \"-Dorg.eclipse.jetty.util.log.class=org.eclipse.jetty.util.log.Slf4jLog\"
-    \"-Dlog4j2.contextSelector=org.apache.logging.log4j.core.async.AsyncLoggerContextSelector\"
-    \"-Dlog4j2.configurationFile=logger/log4j2.xml\"
-    ;; Change logging.level to one of TRACE, DEBUG, INFO, WARN, ERROR
-    ;; depending on requirement during development
-    \"-Dlogging.level=DEBUG\"]}
+{:extra-deps {me.vedang/logger {:local/root \"components/logger\"}}
+ :jvm-opts
+  [\"-Dclojure.tools.logging.factory=clojure.tools.logging.impl/log4j2-factory\"
+   \"-Dorg.eclipse.jetty.util.log.class=org.eclipse.jetty.util.log.Slf4jLog\"
+   \"-Dlog4j2.contextSelector=org.apache.logging.log4j.core.async.AsyncLoggerContextSelector\"
+   \"-Dlog4j2.configurationFile=logger/log4j2-dev.xml\"
+   ;; Change logging.level to one of TRACE, DEBUG, INFO, WARN, ERROR
+   ;; depending on requirement during development
+   \"-Dlogging.level=DEBUG\"]}
 ")
 
 (defn add-logs-dev [{:keys [opts] :as cmd}]
