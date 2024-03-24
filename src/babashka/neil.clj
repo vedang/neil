@@ -272,7 +272,7 @@ chmod +x bin/kaocha
           (latest-stable-clojars-version 'djblue/portal)
           (latest-stable-clojars-version 'mx.cider/tools.deps.enrich-classpath)
           (latest-stable-clojars-version 'nrepl/nrepl)
-          (latest-stable-clojars-version 'refactor-nrepl/refactor-classpath)))
+          (latest-stable-clojars-version 'refactor-nrepl/refactor-nrepl)))
 
 (defn add-cider [{:keys [opts] :as cmd}]
   (if (:help opts)
@@ -290,8 +290,8 @@ chmod +x bin/kaocha
               djblue/portal {:mvn/version \"%s\"}
               mx.cider/tools.deps.enrich-classpath {:mvn/version \"%s\"}
               nrepl/nrepl {:mvn/version \"%s\"}
-              org.openjfx/javafx-controls {:mvn/version \"%s\"}
               org.openjfx/javafx-base {:mvn/version \"%s\"}
+              org.openjfx/javafx-controls {:mvn/version \"%s\"}
               org.openjfx/javafx-graphics {:mvn/version \"%s\"}
               org.openjfx/javafx-swing {:mvn/version \"%s\"}
               refactor-nrepl/refactor-nrepl {:mvn/version \"%s\"}}
@@ -306,11 +306,11 @@ chmod +x bin/kaocha
           (latest-stable-clojars-version 'djblue/portal)
           (latest-stable-clojars-version 'mx.cider/tools.deps.enrich-classpath)
           (latest-stable-clojars-version 'nrepl/nrepl)
-          (latest-stable-clojars-version 'org.openjfx/javafx-controls)
-          (latest-stable-clojars-version 'org.openjfx/javafx-base)
-          (latest-stable-clojars-version 'org.openjfx/javafx-graphics)
-          (latest-stable-clojars-version 'org.openjfx/javafx-swing)
-          (latest-stable-clojars-version 'refactor-nrepl/refactor-classpath)))
+          (latest-mvn-version 'org.openjfx/javafx-base)
+          (latest-mvn-version 'org.openjfx/javafx-controls)
+          (latest-mvn-version 'org.openjfx/javafx-graphics)
+          (latest-mvn-version 'org.openjfx/javafx-swing)
+          (latest-stable-clojars-version 'refactor-nrepl/refactor-nrepl)))
 
 (defn add-cider-storm [{:keys [opts] :as cmd}]
   (if (:help opts)
