@@ -297,7 +297,11 @@ chmod +x bin/kaocha
               refactor-nrepl/refactor-nrepl {:mvn/version \"%s\"}}
  :main-opts  [\"-m\" \"nrepl.cmdline\"
               \"--middleware\" \"[flow-storm.nrepl.middleware/wrap-flow-storm,cider.nrepl/cider-middleware,refactor-nrepl.middleware/wrap-refactor,portal.nrepl/wrap-portal]\"]
- :jvm-opts [\"-Dclojure.storm.instrumentEnable=true\"
+ :jvm-opts [\"-Dflowstorm.startRecording=false\"
+            \"-Dclojure.storm.instrumentEnable=true\"
+            \"-Dflowstorm.jarEditorCommand=emacsclient -n +<<LINE>>:0 <<JAR>>/<<FILE>>\"
+            \"-Dflowstorm.fileEditorCommand=emacsclient -n +<<LINE>>:0 <<FILE>>\"
+            ;; You will want to change the prefix used here
             \"-Dclojure.storm.instrumentOnlyPrefixes=me.vedang.\"]}
 "
           (latest-stable-clojars-version 'cider/cider-nrepl)
