@@ -147,7 +147,7 @@
                         (value->assoc-in-pairs (into root-path [k]) v))
                       value))))
 
-#_ (value->assoc-in-pairs [:aliases :kaocha] (kaocha-alias-latest))
+#_(value->assoc-in-pairs [:aliases :kaocha] (kaocha-alias-latest))
 
 (defn add-alias-str
   "Updates deps-file-str by adding alias contents to alias-kw
@@ -257,6 +257,27 @@ chmod +x bin/kaocha
   (if (:help opts)
     (print-help cmd)
     (add-alias opts :nrepl (nrepl-alias-latest))))
+
+(defn cider-alias []
+  (format "
+{:extra-deps {cider/cider-nrepl {:mvn/version \"%s\"}
+              djblue/portal {:mvn/version \"%s\"}
+              mx.cider/tools.deps.enrich-classpath {:mvn/version \"%s\"}
+              nrepl/nrepl {:mvn/version \"%s\"}
+              refactor-nrepl/refactor-nrepl {:mvn/version \"%s\"}}
+ :main-opts  [\"-m\" \"nrepl.cmdline\"
+              \"--middleware\" \"[cider.nrepl/cider-middleware,refactor-nrepl.middleware/wrap-refactor,portal.nrepl/wrap-portal]\"]}
+"
+          (latest-stable-clojars-version 'cider/cider-nrepl)
+          (latest-stable-clojars-version 'djblue/portal)
+          (latest-stable-clojars-version 'mx.cider/tools.deps.enrich-classpath)
+          (latest-stable-clojars-version 'nrepl/nrepl)
+          (latest-stable-clojars-version 'refactor-nrepl/refactor-classpath)))
+
+(defn add-cider [{:keys [opts] :as cmd}]
+  (if (:help opts)
+    (print-help cmd)
+    (add-alias opts :cider (cider-alias))))
 
 (defn build-alias-latest []
   (let [latest-tag (git/latest-github-tag 'clojure/tools.build)
@@ -553,11 +574,11 @@ details on the search syntax.")))
                     m :description
                     (format "%s/%s on Maven" group_name jar_name)))
         res (->> url curl-get-json :response :docs
-                    (map #(some->
-                           %
-                           (clojure.set/rename-keys keys-m)
-                           (select-keys (vals keys-m))
-                           add-desc)))]
+                 (map #(some->
+                        %
+                        (clojure.set/rename-keys keys-m)
+                        (select-keys (vals keys-m))
+                        add-desc)))]
     (if (empty? res)
       (binding [*out* *err*]
         (println "Unable to find" search-term "on Maven."))
@@ -888,6 +909,7 @@ test
     {:cmds ["add" "build"] :fn add-build}
     {:cmds ["add" "kaocha"] :fn add-kaocha}
     {:cmds ["add" "nrepl"] :fn add-nrepl}
+    {:cmds ["add" "cider"] :fn add-cider}
     {:cmds ["add"] :fn print-help}
     {:cmds ["dep" "versions"] :fn dep-versions :args->opts [:lib]}
     {:cmds ["dep" "add"] :fn dep-add :args->opts [:lib]}
