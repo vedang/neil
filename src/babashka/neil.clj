@@ -279,6 +279,44 @@ chmod +x bin/kaocha
     (print-help cmd)
     (add-alias opts :cider (cider-alias))))
 
+(defn cider-storm-alias []
+  (format "
+{:classpath-overrides
+ ;; we need to disable the official compiler and use ClojureStorm
+ {org.clojure/clojure nil}
+ :extra-deps {cider/cider-nrepl {:mvn/version \"%s\"}
+              com.github.flow-storm/clojure {:mvn/version \"%s\"}
+              com.github.flow-storm/flow-storm-dbg {:mvn/version \"%s\"}
+              djblue/portal {:mvn/version \"%s\"}
+              mx.cider/tools.deps.enrich-classpath {:mvn/version \"%s\"}
+              nrepl/nrepl {:mvn/version \"%s\"}
+              org.openjfx/javafx-controls {:mvn/version \"%s\"}
+              org.openjfx/javafx-base {:mvn/version \"%s\"}
+              org.openjfx/javafx-graphics {:mvn/version \"%s\"}
+              org.openjfx/javafx-swing {:mvn/version \"%s\"}
+              refactor-nrepl/refactor-nrepl {:mvn/version \"%s\"}}
+ :main-opts  [\"-m\" \"nrepl.cmdline\"
+              \"--middleware\" \"[flow-storm.nrepl.middleware/wrap-flow-storm,cider.nrepl/cider-middleware,refactor-nrepl.middleware/wrap-refactor,portal.nrepl/wrap-portal]\"]
+ :jvm-opts [\"-Dclojure.storm.instrumentEnable=true\"
+            \"-Dclojure.storm.instrumentOnlyPrefixes=me.vedang.\"]}
+"
+          (latest-stable-clojars-version 'cider/cider-nrepl)
+          (latest-stable-clojars-version 'com.github.flow-storm/clojure)
+          (latest-stable-clojars-version 'com.github.flow-storm/flow-storm-dbg)
+          (latest-stable-clojars-version 'djblue/portal)
+          (latest-stable-clojars-version 'mx.cider/tools.deps.enrich-classpath)
+          (latest-stable-clojars-version 'nrepl/nrepl)
+          (latest-stable-clojars-version 'org.openjfx/javafx-controls)
+          (latest-stable-clojars-version 'org.openjfx/javafx-base)
+          (latest-stable-clojars-version 'org.openjfx/javafx-graphics)
+          (latest-stable-clojars-version 'org.openjfx/javafx-swing)
+          (latest-stable-clojars-version 'refactor-nrepl/refactor-classpath)))
+
+(defn add-cider-storm [{:keys [opts] :as cmd}]
+  (if (:help opts)
+    (print-help cmd)
+    (add-alias opts :cider-storm (cider-storm-alias))))
+
 (defn build-alias-latest []
   (let [latest-tag (git/latest-github-tag 'clojure/tools.build)
         tag (:name latest-tag)
@@ -910,6 +948,7 @@ test
     {:cmds ["add" "kaocha"] :fn add-kaocha}
     {:cmds ["add" "nrepl"] :fn add-nrepl}
     {:cmds ["add" "cider"] :fn add-cider}
+    {:cmds ["add" "cider-storm"] :fn add-cider-storm}
     {:cmds ["add"] :fn print-help}
     {:cmds ["dep" "versions"] :fn dep-versions :args->opts [:lib]}
     {:cmds ["dep" "add"] :fn dep-add :args->opts [:lib]}
