@@ -258,81 +258,50 @@ chmod +x bin/kaocha
     (print-help cmd)
     (add-alias opts :nrepl (nrepl-alias-latest))))
 
-(defn cider-alias []
-  (format "
-{:extra-deps {cider/cider-nrepl {:mvn/version \"%s\"}
-              djblue/portal {:mvn/version \"%s\"}
-              mx.cider/tools.deps.enrich-classpath {:mvn/version \"%s\"}
-              nrepl/nrepl {:mvn/version \"%s\"}
-              refactor-nrepl/refactor-nrepl {:mvn/version \"%s\"}}
- :main-opts  [\"-m\" \"nrepl.cmdline\"
-              \"--middleware\" \"[cider.nrepl/cider-middleware,refactor-nrepl.middleware/wrap-refactor,portal.nrepl/wrap-portal]\"]}
-"
-          (latest-stable-clojars-version 'cider/cider-nrepl)
-          (latest-stable-clojars-version 'djblue/portal)
-          (latest-stable-clojars-version 'mx.cider/tools.deps.enrich-classpath)
-          (latest-stable-clojars-version 'nrepl/nrepl)
-          (latest-stable-clojars-version 'refactor-nrepl/refactor-nrepl)))
+(defn cider-alias-latest []
+  (let [nrepl-alias-map (nrepl-alias-latest)
+        portal-version (future (latest-stable-clojars-version 'djblue/portal))
+        enrich-classpath-version (future (latest-stable-clojars-version 'mx.cider/tools.deps.enrich-classpath))]
+    (-> nrepl-alias-map
+        (assoc-in [:extra-deps 'djblue/portal :mvn/version] @portal-version)
+        (assoc-in [:extra-deps 'mx.cider/tools.deps.enrich-classpath :mvn/version] @enrich-classpath-version)
+        (assoc :main-opts ["-m" "nrepl.cmdline" "--interactive" "--color"
+                           "--middleware" "[cider.nrepl/cider-middleware,refactor-nrepl.middleware/wrap-refactor,portal.nrepl/wrap-portal]"]))))
 
 (defn add-cider [{:keys [opts] :as cmd}]
   (if (:help opts)
     (print-help cmd)
-    (add-alias opts :cider (cider-alias))))
+    (add-alias opts :cider (cider-alias-latest))))
 
-(defn cider-storm-alias []
-  (format "
-{:classpath-overrides
- ;; we need to disable the official compiler and use ClojureStorm
- {org.clojure/clojure nil}
- :extra-deps {cider/cider-nrepl {:mvn/version \"%s\"}
-              com.github.flow-storm/clojure {:mvn/version \"%s\"}
-              com.github.flow-storm/flow-storm-dbg {:mvn/version \"%s\"}
-              djblue/portal {:mvn/version \"%s\"}
-              mx.cider/tools.deps.enrich-classpath {:mvn/version \"%s\"}
-              nrepl/nrepl {:mvn/version \"%s\"}
-              org.openjfx/javafx-base {:mvn/version \"%s\"}
-              org.openjfx/javafx-controls {:mvn/version \"%s\"}
-              org.openjfx/javafx-graphics {:mvn/version \"%s\"}
-              org.openjfx/javafx-swing {:mvn/version \"%s\"}
-              refactor-nrepl/refactor-nrepl {:mvn/version \"%s\"}}
- :main-opts  [\"-m\" \"nrepl.cmdline\"
-              \"--middleware\" \"[flow-storm.nrepl.middleware/wrap-flow-storm,cider.nrepl/cider-middleware,refactor-nrepl.middleware/wrap-refactor,portal.nrepl/wrap-portal]\"]
- :jvm-opts [\"-Dflowstorm.startRecording=false\"
-            \"-Dclojure.storm.instrumentEnable=true\"
-            \"-Dflowstorm.jarEditorCommand=emacsclient -n +<<LINE>>:0 <<JAR>>/<<FILE>>\"
-            \"-Dflowstorm.fileEditorCommand=emacsclient -n +<<LINE>>:0 <<FILE>>\"
-            ;; You will want to change the prefix used here
-            \"-Dclojure.storm.instrumentOnlyPrefixes=me.vedang.\"]}
-"
-          (latest-stable-clojars-version 'cider/cider-nrepl)
-          (latest-stable-clojars-version 'com.github.flow-storm/clojure)
-          (latest-stable-clojars-version 'com.github.flow-storm/flow-storm-dbg)
-          (latest-stable-clojars-version 'djblue/portal)
-          (latest-stable-clojars-version 'mx.cider/tools.deps.enrich-classpath)
-          (latest-stable-clojars-version 'nrepl/nrepl)
-          (latest-mvn-version 'org.openjfx/javafx-base)
-          (latest-mvn-version 'org.openjfx/javafx-controls)
-          (latest-mvn-version 'org.openjfx/javafx-graphics)
-          (latest-mvn-version 'org.openjfx/javafx-swing)
-          (latest-stable-clojars-version 'refactor-nrepl/refactor-nrepl)))
+(defn cider-storm-alias-latest []
+  (let [cider-alias-map (cider-alias-latest)
+        flowstorm-clojure-version (future (latest-stable-clojars-version 'com.github.flow-storm/clojure))
+        flowstorm-dbg-version (future (latest-stable-clojars-version 'com.github.flow-storm/flow-storm-dbg))]
+    (-> cider-alias-map
+        (assoc :classpath-overrides {'org.clojure/clojure nil})
+        (assoc-in [:extra-deps 'com.github.flow-storm/clojure :mvn/version] @flowstorm-clojure-version)
+        (assoc-in [:extra-deps 'com.github.flow-storm/flow-storm-dbg :mvn/version] @flowstorm-dbg-version)
+        (assoc :jvm-opts ["-Dflowstorm.startRecording=false"
+                          "-Dclojure.storm.instrumentEnable=true"
+                          "-Dflowstorm.jarEditorCommand=emacsclient --eval '(let ((b (cider-find-file \"jar:file:<<JAR>>!/<<FILE>>\"))) (with-current-buffer b (switch-to-buffer b) (goto-char (point-min)) (forward-line (1- <<LINE>>))))'"
+                          "-Dflowstorm.fileEditorCommand=emacsclient -n +<<LINE>>:0 <<FILE>>"
+                          ;; You will want to change the prefix used here
+                          "-Dclojure.storm.instrumentOnlyPrefixes=me.vedang."]))))
 
 (defn add-cider-storm [{:keys [opts] :as cmd}]
   (if (:help opts)
     (print-help cmd)
-    (add-alias opts :cider-storm (cider-storm-alias))))
+    (add-alias opts :cider-storm (cider-storm-alias-latest))))
 
 (defn logs-dev-alias []
-  "
-{:extra-deps {me.vedang/logger {:local/root \"components/logger\"}}
- :jvm-opts
-  [\"-Dclojure.tools.logging.factory=clojure.tools.logging.impl/log4j2-factory\"
-   \"-Dorg.eclipse.jetty.util.log.class=org.eclipse.jetty.util.log.Slf4jLog\"
-   \"-Dlog4j2.contextSelector=org.apache.logging.log4j.core.async.AsyncLoggerContextSelector\"
-   \"-Dlog4j2.configurationFile=logger/log4j2-dev.xml\"
-   ;; Change logging.level to one of TRACE, DEBUG, INFO, WARN, ERROR
-   ;; depending on requirement during development
-   \"-Dlogging.level=DEBUG\"]}
-")
+  {:extra-deps {'me.vedang/logger {:local/root "components/logger"}}
+   :jvm-opts   ["-Dclojure.tools.logging.factory=clojure.tools.logging.impl/log4j2-factory"
+                "-Dorg.eclipse.jetty.util.log.class=org.eclipse.jetty.util.log.Slf4jLog"
+                "-Dlog4j2.contextSelector=org.apache.logging.log4j.core.async.AsyncLoggerContextSelector"
+                "-Dlog4j2.configurationFile=logger/log4j2-dev.xml"
+                ;; Change logging.level to one of TRACE, DEBUG, INFO, WARN, ERROR
+                ;; depending on requirement during development
+                "-Dlogging.level=DEBUG"]})
 
 (defn add-logs-dev [{:keys [opts] :as cmd}]
   (if (:help opts)
